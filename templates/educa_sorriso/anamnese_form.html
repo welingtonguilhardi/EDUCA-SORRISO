@@ -1,0 +1,158 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Nova Anamnese - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-clipboard2-pulse text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold mt-3">Nova Anamnese</h2>
+                        <p class="text-muted">Preencha sua ficha de saúde bucal para melhor atendimento</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Dados Gerais -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-heart-pulse me-2"></i>Dados Gerais de Saúde
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                {{ form.possui_alergias }}
+                                                <label class="form-check-label" for="{{ form.possui_alergias.id_for_label }}">
+                                                    Possui alergias?
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.ultima_consulta.id_for_label }}" class="form-label">Última Consulta Odontológica</label>
+                                            {{ form.ultima_consulta }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.alergias_descricao.id_for_label }}" class="form-label">Descrição das Alergias (se houver)</label>
+                                    {{ form.alergias_descricao }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.medicamentos_uso.id_for_label }}" class="form-label">Medicamentos em Uso</label>
+                                    {{ form.medicamentos_uso }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.problemas_saude.id_for_label }}" class="form-label">Problemas de Saúde</label>
+                                    {{ form.problemas_saude }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dados Odontológicos -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-tooth me-2"></i>Dados Odontológicos
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.frequencia_escovacao.id_for_label }}" class="form-label">Frequência de Escovação</label>
+                                            {{ form.frequencia_escovacao }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                {{ form.usa_fio_dental }}
+                                                <label class="form-check-label" for="{{ form.usa_fio_dental.id_for_label }}">
+                                                    Usa fio dental?
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.frequencia_fio_dental.id_for_label }}" class="form-label">Frequência do Uso do Fio Dental</label>
+                                    {{ form.frequencia_fio_dental }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.problemas_bucais.id_for_label }}" class="form-label">Problemas Bucais</label>
+                                    {{ form.problemas_bucais }}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                {{ form.dor_dentes }}
+                                                <label class="form-check-label" for="{{ form.dor_dentes.id_for_label }}">
+                                                    Sente dor nos dentes?
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                {{ form.sangramento_gengiva }}
+                                                <label class="form-check-label" for="{{ form.sangramento_gengiva.id_for_label }}">
+                                                    Sangramento na gengiva?
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Histórico Familiar -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-people me-2"></i>Histórico Familiar
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.problemas_odontologicos_familia.id_for_label }}" class="form-label">Problemas Odontológicos na Família</label>
+                                    {{ form.problemas_odontologicos_familia }}
+                                    <div class="form-text">
+                                        Descreva problemas odontológicos que ocorrem na sua família (pais, irmãos, etc.)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg me-3">
+                                <i class="bi bi-check-circle me-2"></i>Salvar Anamnese
+                            </button>
+                            <a href="{% url 'educa_sorriso:anamnese_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

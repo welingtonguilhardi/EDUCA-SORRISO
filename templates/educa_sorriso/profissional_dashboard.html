@@ -1,0 +1,312 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Dashboard do Profissional - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="sidebar">
+                <h5 class="mb-3">
+                    <i class="bi bi-heart-pulse me-2"></i>Área do Profissional
+                </h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="{% url 'educa_sorriso:profissional_dashboard' %}">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:profissional_consultas' %}">
+                        <i class="bi bi-calendar-check me-2"></i>Gerenciar Consultas
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:profissional_pacientes' %}">
+                        <i class="bi bi-people me-2"></i>Pacientes
+                    </a>
+                </nav>
+                
+                <hr>
+                <div class="text-center">
+                    <h6>Dicas para Profissionais</h6>
+                    <small class="text-muted">
+                        • Revise sempre as anamneses completas<br>
+                        • Mantenha registros detalhados<br>
+                        • Oriente sobre prevenção<br>
+                        • Acompanhe o progresso dos tratamentos
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2>
+                        <i class="bi bi-heart-pulse me-2"></i>Dashboard do Profissional
+                    </h2>
+                    <p class="text-muted">Bem-vindo! Aqui você pode gerenciar consultas e acompanhar seus pacientes.</p>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-calendar-check stats-icon"></i>
+                        <div class="stats-number">{{ consultas_hoje.count }}</div>
+                        <div class="stats-label">Consultas Hoje</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-calendar-week stats-icon"></i>
+                        <div class="stats-number">{{ consultas_semana.count }}</div>
+                        <div class="stats-label">Esta Semana</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-people stats-icon"></i>
+                        <div class="stats-number">{{ pacientes_recentes.count }}</div>
+                        <div class="stats-label">Pacientes Recentes</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-clock stats-icon"></i>
+                        <div class="stats-number">{{ consultas_hoje.count }}</div>
+                        <div class="stats-label">Próximas Consultas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consultas de Hoje -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-day me-2"></i>Consultas de Hoje
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if consultas_hoje %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Horário</th>
+                                                <th>Paciente</th>
+                                                <th>Tipo</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for consulta in consultas_hoje %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ consulta.data_hora|date:"H:i" }}</strong>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ consulta.paciente.usuario.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ consulta.paciente.cpf }}</small>
+                                                </td>
+                                                <td>{{ consulta.get_tipo_consulta_display }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if consulta.status == 'agendada' %}warning{% elif consulta.status == 'confirmada' %}success{% else %}secondary{% endif %}">
+                                                        {{ consulta.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'educa_sorriso:profissional_consulta_detail' consulta.pk %}" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-eye me-1"></i>Ver
+                                                    </a>
+                                                    <a href="{% url 'educa_sorriso:profissional_paciente_detail' consulta.paciente.pk %}" class="btn btn-sm btn-info">
+                                                        <i class="bi bi-person me-1"></i>Paciente
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3">Nenhuma consulta hoje</h5>
+                                    <p class="text-muted">Não há consultas agendadas para hoje.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consultas da Semana -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-week me-2"></i>Próximas Consultas da Semana
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if consultas_semana %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Horário</th>
+                                                <th>Paciente</th>
+                                                <th>Tipo</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for consulta in consultas_semana %}
+                                            <tr>
+                                                <td>{{ consulta.data_hora|date:"d/m/Y" }}</td>
+                                                <td>{{ consulta.data_hora|date:"H:i" }}</td>
+                                                <td>
+                                                    <strong>{{ consulta.paciente.usuario.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ consulta.paciente.cpf }}</small>
+                                                </td>
+                                                <td>{{ consulta.get_tipo_consulta_display }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if consulta.status == 'agendada' %}warning{% elif consulta.status == 'confirmada' %}success{% else %}secondary{% endif %}">
+                                                        {{ consulta.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'educa_sorriso:profissional_consulta_detail' consulta.pk %}" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-eye me-1"></i>Ver
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'educa_sorriso:profissional_consultas' %}" class="btn btn-primary">
+                                        <i class="bi bi-calendar-check me-1"></i>Ver Todas as Consultas
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3">Nenhuma consulta esta semana</h5>
+                                    <p class="text-muted">Não há consultas agendadas para esta semana.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pacientes Recentes -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-people me-2"></i>Pacientes Recentes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if pacientes_recentes %}
+                                <div class="row">
+                                    {% for paciente in pacientes_recentes %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1">{{ paciente.usuario.get_full_name }}</h6>
+                                                        <small class="text-muted">{{ paciente.cpf }}</small><br>
+                                                        <small class="text-muted">{{ paciente.get_tipo_usuario_display }}</small><br>
+                                                        <small class="text-muted">Cadastrado em: {{ paciente.data_cadastro|date:"d/m/Y" }}</small>
+                                                    </div>
+                                                    <div>
+                                                        <a href="{% url 'educa_sorriso:profissional_paciente_detail' paciente.pk %}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye me-1"></i>Ver
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'educa_sorriso:profissional_pacientes' %}" class="btn btn-primary">
+                                        <i class="bi bi-people me-1"></i>Ver Todos os Pacientes
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3">Nenhum paciente recente</h5>
+                                    <p class="text-muted">Não há pacientes cadastrados recentemente.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    <a href="{% url 'educa_sorriso:profissional_consultas' %}" class="btn btn-outline-primary btn-lg w-100">
+                                        <i class="bi bi-calendar-check mb-2" style="font-size: 2rem; display: block;"></i>
+                                        Gerenciar Consultas
+                                    </a>
+                                </div>
+                                <div class="col-md-4 text-center mb-3">
+                                    <a href="{% url 'educa_sorriso:profissional_pacientes' %}" class="btn btn-outline-success btn-lg w-100">
+                                        <i class="bi bi-people mb-2" style="font-size: 2rem; display: block;"></i>
+                                        Ver Pacientes
+                                    </a>
+                                </div>
+                                <div class="col-md-4 text-center mb-3">
+                                    <a href="{% url 'educa_sorriso:conteudo_list' %}" class="btn btn-outline-warning btn-lg w-100">
+                                        <i class="bi bi-book mb-2" style="font-size: 2rem; display: block;"></i>
+                                        Material Educativo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Minhas Anamneses - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-clipboard2-pulse me-2"></i>Minhas Anamneses
+        </h1>
+        <a href="{% url 'educa_sorriso:anamnese_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Nova Anamnese
+        </a>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for anamnese in page_obj %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    {{ anamnese.data_preenchimento|date:"d/m/Y H:i" }}
+                                </h6>
+                                <span class="badge bg-light text-dark">
+                                    {{ anamnese.paciente.usuario.get_full_name|default:anamnese.paciente.usuario.username }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Dados Gerais -->
+                            <div class="mb-3">
+                                <h6 class="text-primary">
+                                    <i class="bi bi-heart-pulse me-1"></i>Dados Gerais
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Alergias:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.possui_alergias %}
+                                                <span class="badge bg-warning">Sim</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Não</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Última Consulta:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.ultima_consulta %}
+                                                {{ anamnese.ultima_consulta|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dados Odontológicos -->
+                            <div class="mb-3">
+                                <h6 class="text-secondary">
+                                    <i class="bi bi-tooth me-1"></i>Dados Odontológicos
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Frequência Escovação:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.frequencia_escovacao %}
+                                                {{ anamnese.get_frequencia_escovacao_display }}
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Usa Fio Dental:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.usa_fio_dental %}
+                                                <span class="badge bg-success">Sim</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Não</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Dor nos Dentes:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.dor_dentes %}
+                                                <span class="badge bg-danger">Sim</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Não</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Sangramento Gengiva:</small>
+                                        <p class="mb-1">
+                                            {% if anamnese.sangramento_gengiva %}
+                                                <span class="badge bg-danger">Sim</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Não</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Observações -->
+                            {% if anamnese.problemas_bucais or anamnese.alergias_descricao or anamnese.medicamentos_uso %}
+                                <div class="mb-3">
+                                    <h6 class="text-info">
+                                        <i class="bi bi-chat-text me-1"></i>Observações
+                                    </h6>
+                                    {% if anamnese.problemas_bucais %}
+                                        <small class="text-muted">Problemas Bucais:</small>
+                                        <p class="mb-1">{{ anamnese.problemas_bucais|truncatewords:10 }}</p>
+                                    {% endif %}
+                                    {% if anamnese.alergias_descricao %}
+                                        <small class="text-muted">Alergias:</small>
+                                        <p class="mb-1">{{ anamnese.alergias_descricao|truncatewords:10 }}</p>
+                                    {% endif %}
+                                    {% if anamnese.medicamentos_uso %}
+                                        <small class="text-muted">Medicamentos:</small>
+                                        <p class="mb-1">{{ anamnese.medicamentos_uso|truncatewords:10 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="text-center">
+                                <a href="{% url 'educa_sorriso:anamnese_detail' anamnese.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard2-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhuma anamnese encontrada</h4>
+            <p class="text-muted">Você ainda não possui anamneses cadastradas.</p>
+            <a href="{% url 'educa_sorriso:anamnese_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Criar Primeira Anamnese
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

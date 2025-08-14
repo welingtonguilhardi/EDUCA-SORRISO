@@ -1,0 +1,63 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Login - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-heart-pulse-fill text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold mt-3">EDUCA SORRISO</h2>
+                        <p class="text-muted">Faça login para acessar sua conta</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Usuário ou senha incorretos. Tente novamente.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Usuário</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" name="username" class="form-control" id="id_username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" name="password" class="form-control" id="id_password" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Não tem uma conta? 
+                                <a href="{% url 'educa_sorriso:cadastro' %}" class="text-decoration-none">Cadastre-se</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

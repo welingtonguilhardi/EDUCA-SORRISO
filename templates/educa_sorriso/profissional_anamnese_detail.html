@@ -1,0 +1,267 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Anamnese do Paciente - Profissional{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_dashboard' %}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_consultas' %}">
+                            <i class="bi bi-calendar-check"></i> Consultas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_pacientes' %}">
+                            <i class="bi bi-people"></i> Pacientes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-file-text text-primary"></i>
+                    Anamnese do Paciente
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'educa_sorriso:profissional_paciente_detail' paciente.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informações do Paciente -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person"></i>
+                        Informações do Paciente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nome:</strong> {{ paciente.usuario.get_full_name }}</p>
+                            <p><strong>CPF:</strong> {{ paciente.cpf }}</p>
+                            <p><strong>Data de Nascimento:</strong> {{ paciente.data_nascimento|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Telefone:</strong> {{ paciente.telefone }}</p>
+                            <p><strong>Endereço:</strong> {{ paciente.endereco }}, {{ paciente.bairro }}</p>
+                            <p><strong>Cidade:</strong> {{ paciente.cidade }}/{{ paciente.estado }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anamneses -->
+            {% if anamneses %}
+            {% for anamnese in anamneses %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-date"></i>
+                        Anamnese - {{ anamnese.data_preenchimento|date:"d/m/Y H:i" }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Dados Pessoais -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-person-circle"></i> Dados Pessoais
+                            </h6>
+                            <p><strong>Idade:</strong> {{ anamnese.idade }} anos</p>
+                            <p><strong>Sexo:</strong> {{ anamnese.get_sexo_display }}</p>
+                            <p><strong>Estado Civil:</strong> {{ anamnese.get_estado_civil_display }}</p>
+                            <p><strong>Profissão:</strong> {{ anamnese.profissao|default:"Não informado" }}</p>
+                        </div>
+
+                        <!-- Histórico Médico -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-heart-pulse"></i> Histórico Médico
+                            </h6>
+                            <p><strong>Histórico Familiar:</strong> 
+                                {% if anamnese.historico_familiar %}
+                                    <span class="badge bg-success">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Medicamentos:</strong> 
+                                {% if anamnese.medicamentos %}
+                                    <span class="badge bg-warning">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Alergias:</strong> 
+                                {% if anamnese.alergias %}
+                                    <span class="badge bg-danger">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <!-- Histórico Odontológico -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-tooth"></i> Histórico Odontológico
+                            </h6>
+                            <p><strong>Última Consulta:</strong> {{ anamnese.ultima_consulta|date:"d/m/Y"|default:"Não informado" }}</p>
+                            <p><strong>Tratamento Anterior:</strong> 
+                                {% if anamnese.tratamento_anterior %}
+                                    <span class="badge bg-info">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Dor Atual:</strong> 
+                                {% if anamnese.dor_atual %}
+                                    <span class="badge bg-danger">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Hábitos -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-activity"></i> Hábitos
+                            </h6>
+                            <p><strong>Fuma:</strong> 
+                                {% if anamnese.fuma %}
+                                    <span class="badge bg-danger">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Bebe:</strong> 
+                                {% if anamnese.bebe %}
+                                    <span class="badge bg-warning">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Escovação:</strong> {{ anamnese.get_escovacao_display }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Observações -->
+                    {% if anamnese.observacoes %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-chat-text"></i> Observações
+                            </h6>
+                            <p>{{ anamnese.observacoes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Detalhes Adicionais -->
+                    {% if anamnese.historico_familiar or anamnese.medicamentos or anamnese.alergias %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-info-circle"></i> Detalhes Adicionais
+                            </h6>
+                            
+                            {% if anamnese.historico_familiar %}
+                            <div class="mb-3">
+                                <strong>Histórico Familiar:</strong>
+                                <p class="mb-1">{{ anamnese.historico_familiar }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if anamnese.medicamentos %}
+                            <div class="mb-3">
+                                <strong>Medicamentos em Uso:</strong>
+                                <p class="mb-1">{{ anamnese.medicamentos }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if anamnese.alergias %}
+                            <div class="mb-3">
+                                <strong>Alergias:</strong>
+                                <p class="mb-1">{{ anamnese.alergias }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-file-text display-1 text-muted"></i>
+                    <h4 class="mt-3">Nenhuma anamnese encontrada</h4>
+                    <p class="text-muted">Este paciente ainda não possui anamneses cadastradas.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estatísticas das Anamneses -->
+            {% if anamneses %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        Estatísticas das Anamneses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ total_anamneses }}</h4>
+                                <small class="text-muted">Total de Anamneses</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-success">{{ anamneses_com_historico }}</h4>
+                                <small class="text-muted">Com Histórico Familiar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-warning">{{ anamneses_com_medicamentos }}</h4>
+                                <small class="text-muted">Com Medicamentos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-danger">{{ anamneses_com_alergias }}</h4>
+                            <small class="text-muted">Com Alergias</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

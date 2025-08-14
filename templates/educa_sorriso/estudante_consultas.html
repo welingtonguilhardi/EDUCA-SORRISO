@@ -1,0 +1,152 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Gerenciar Consultas - Estudante{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="sidebar">
+                <h5 class="mb-3">
+                    <i class="bi bi-mortarboard me-2"></i>Área do Estudante
+                </h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{% url 'educa_sorriso:estudante_dashboard' %}">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                    <a class="nav-link active" href="{% url 'educa_sorriso:estudante_consultas' %}">
+                        <i class="bi bi-calendar-check me-2"></i>Gerenciar Consultas
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:estudante_pacientes' %}">
+                        <i class="bi bi-people me-2"></i>Pacientes
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:estudante_mensagens' %}">
+                        <i class="bi bi-chat-dots me-2"></i>Suporte
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2>
+                        <i class="bi bi-calendar-check me-2"></i>Gerenciar Consultas
+                    </h2>
+                    <p class="text-muted">Visualize e gerencie as consultas agendadas.</p>
+                </div>
+            </div>
+            
+            <!-- Consultas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>Consultas Agendadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Paciente</th>
+                                        <th>Tipo</th>
+                                        <th>Status</th>
+                                        <th>Observações</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for consulta in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ consulta.data_hora|date:"d/m/Y" }}</strong><br>
+                                            <small class="text-muted">{{ consulta.data_hora|date:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ consulta.paciente.usuario.get_full_name }}</strong><br>
+                                            <small class="text-muted">{{ consulta.paciente.cpf }}</small>
+                                        </td>
+                                        <td>{{ consulta.get_tipo_consulta_display }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if consulta.status == 'agendada' %}warning{% elif consulta.status == 'confirmada' %}success{% elif consulta.status == 'realizada' %}info{% elif consulta.status == 'cancelada' %}danger{% else %}secondary{% endif %}">
+                                                {{ consulta.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if consulta.observacoes %}
+                                                <small>{{ consulta.observacoes|truncatechars:50 }}</small>
+                                            {% else %}
+                                                <small class="text-muted">Nenhuma observação</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'educa_sorriso:estudante_consulta_detail' consulta.pk %}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye me-1"></i>Ver
+                                            </a>
+                                            <a href="{% url 'educa_sorriso:estudante_paciente_detail' consulta.paciente.pk %}" class="btn btn-sm btn-info">
+                                                <i class="bi bi-person me-1"></i>Paciente
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginação -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Nenhuma consulta encontrada</h5>
+                            <p class="text-muted">Não há consultas agendadas no momento.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}

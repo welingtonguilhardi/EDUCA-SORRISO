@@ -1,0 +1,103 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Minhas Consultas - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-calendar-check me-2"></i>Minhas Consultas
+        </h1>
+        <a href="{% url 'educa_sorriso:consulta_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Agendar Nova Consulta
+        </a>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for consulta in page_obj %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">{{ consulta.tipo_consulta }}</h5>
+                                <span class="badge bg-{% if consulta.status == 'agendada' %}warning{% elif consulta.status == 'confirmada' %}success{% elif consulta.status == 'realizada' %}info{% elif consulta.status == 'cancelada' %}danger{% else %}secondary{% endif %}">
+                                    {{ consulta.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    <strong>Data e Hora:</strong> {{ consulta.data_hora|date:"d/m/Y H:i" }}
+                                </p>
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <strong>Agendado em:</strong> {{ consulta.data_agendamento|date:"d/m/Y H:i" }}
+                                </p>
+                                {% if consulta.observacoes %}
+                                    <p class="text-muted mb-0">
+                                        <i class="bi bi-chat-text me-2"></i>
+                                        <strong>Observações:</strong> {{ consulta.observacoes|truncatewords:10 }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'educa_sorriso:consulta_update' consulta.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i>Editar
+                                </a>
+                                {% if consulta.status == 'agendada' or consulta.status == 'confirmada' %}
+                                    <a href="{% url 'educa_sorriso:consulta_delete' consulta.pk %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhuma consulta encontrada</h4>
+            <p class="text-muted">Você ainda não possui consultas agendadas.</p>
+            <a href="{% url 'educa_sorriso:consulta_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Agendar Primeira Consulta
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

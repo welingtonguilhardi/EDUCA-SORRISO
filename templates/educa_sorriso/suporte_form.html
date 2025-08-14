@@ -1,0 +1,158 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Nova Mensagem de Suporte - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-chat-dots text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold mt-3">Nova Mensagem de Suporte</h2>
+                        <p class="text-muted">
+                            Envie sua dúvida sobre saúde bucal. Nossos estudantes de Odontologia estão prontos para ajudar!
+                        </p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.assunto.id_for_label }}" class="form-label">
+                                <i class="bi bi-tag me-1"></i>Assunto *
+                            </label>
+                            {{ form.assunto }}
+                            {% if form.assunto.errors %}
+                                <div class="text-danger small">{{ form.assunto.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                Descreva brevemente o tema da sua dúvida (ex: "Dor de dente", "Higiene bucal", "Tratamento")
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.mensagem.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-text me-1"></i>Mensagem *
+                            </label>
+                            {{ form.mensagem }}
+                            {% if form.mensagem.errors %}
+                                <div class="text-danger small">{{ form.mensagem.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                Descreva sua dúvida ou problema detalhadamente para que possamos ajudá-lo da melhor forma.
+                            </div>
+                        </div>
+                        
+                        <!-- Dicas para uma boa mensagem -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-lightbulb me-2"></i>Dicas para uma boa mensagem:
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Seja específico sobre seus sintomas ou dúvidas</li>
+                                <li>Mencione há quanto tempo está enfrentando o problema</li>
+                                <li>Informe se já consultou um dentista</li>
+                                <li>Descreva qualquer tratamento que esteja fazendo</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg me-3">
+                                <i class="bi bi-send me-2"></i>Enviar Mensagem
+                            </button>
+                            <a href="{% url 'educa_sorriso:suporte_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Contador de caracteres para a mensagem
+document.addEventListener('DOMContentLoaded', function() {
+    const mensagemTextarea = document.getElementById('{{ form.mensagem.id_for_label }}');
+    const assuntoInput = document.getElementById('{{ form.assunto.id_for_label }}');
+    
+    if (mensagemTextarea) {
+        // Adicionar contador de caracteres
+        const contador = document.createElement('div');
+        contador.className = 'form-text text-end';
+        contador.id = 'contador-caracteres';
+        mensagemTextarea.parentNode.appendChild(contador);
+        
+        function atualizarContador() {
+            const caracteres = mensagemTextarea.value.length;
+            const maxCaracteres = 2000; // Limite sugerido
+            contador.textContent = `${caracteres}/${maxCaracteres} caracteres`;
+            
+            if (caracteres > maxCaracteres * 0.9) {
+                contador.className = 'form-text text-end text-warning';
+            } else {
+                contador.className = 'form-text text-end';
+            }
+        }
+        
+        mensagemTextarea.addEventListener('input', atualizarContador);
+        atualizarContador();
+    }
+    
+    // Validação do formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const assunto = assuntoInput.value.trim();
+        const mensagem = mensagemTextarea.value.trim();
+        
+        if (assunto.length < 5) {
+            e.preventDefault();
+            alert('Por favor, forneça um assunto mais descritivo (mínimo 5 caracteres).');
+            assuntoInput.focus();
+            return;
+        }
+        
+        if (mensagem.length < 20) {
+            e.preventDefault();
+            alert('Por favor, forneça uma mensagem mais detalhada (mínimo 20 caracteres).');
+            mensagemTextarea.focus();
+            return;
+        }
+    });
+});
+</script>
+
+<style>
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(46, 134, 171, 0.25);
+}
+
+textarea.form-control {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.alert ul {
+    padding-left: 1.5rem;
+}
+
+.alert li {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

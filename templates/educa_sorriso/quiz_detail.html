@@ -1,0 +1,267 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}{{ quiz.titulo }} - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'educa_sorriso:quiz_list' %}">
+                            <i class="bi bi-puzzle me-1"></i>Quiz do Sorriso
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ quiz.titulo }}</li>
+                </ol>
+            </nav>
+
+            <!-- Informações do Quiz -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="text-center">
+                        <h2 class="h3 mb-2">{{ quiz.titulo }}</h2>
+                        <p class="mb-0">{{ quiz.descricao }}</p>
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="quiz-stat">
+                                <i class="bi bi-question-circle text-primary" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2">{{ quiz.perguntas.count }}</h4>
+                                <p class="text-muted">Perguntas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="quiz-stat">
+                                <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2">{{ quiz.perguntas.count|add:"2" }}</h4>
+                                <p class="text-muted">Minutos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="quiz-stat">
+                                <i class="bi bi-trophy text-success" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2">100</h4>
+                                <p class="text-muted">Pontos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário do Quiz -->
+            <form method="post" id="quizForm">
+                {% csrf_token %}
+                <div id="perguntas-container">
+                    {% for pergunta in quiz.perguntas.all %}
+                        <div class="card shadow mb-4 pergunta-card" data-pergunta="{{ forloop.counter }}">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-primary me-2">{{ forloop.counter }}</span>
+                                    {{ pergunta.pergunta }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alternativas">
+                                    {% for alternativa in pergunta.alternativas.all %}
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="pergunta_{{ pergunta.id }}" 
+                                                   id="alt_{{ alternativa.id }}" 
+                                                   value="{{ alternativa.id }}" required>
+                                            <label class="form-check-label" for="alt_{{ alternativa.id }}">
+                                                {{ alternativa.texto }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Botões de Navegação -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <button type="button" class="btn btn-outline-secondary" id="btnAnterior" style="display: none;">
+                        <i class="bi bi-arrow-left me-2"></i>Anterior
+                    </button>
+                    
+                    <div class="quiz-progress">
+                        <span id="progresso">1</span> de {{ quiz.perguntas.count }}
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" id="btnProximo">
+                        Próxima<i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                    
+                    <button type="submit" class="btn btn-success" id="btnEnviar" style="display: none;">
+                        <i class="bi bi-check-circle me-2"></i>Enviar Quiz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let perguntaAtual = 1;
+const totalPerguntas = {{ quiz.perguntas.count }};
+
+function mostrarPergunta(numero) {
+    // Esconder todas as perguntas
+    document.querySelectorAll('.pergunta-card').forEach(card => {
+        card.style.display = 'none';
+    });
+    
+    // Mostrar apenas a pergunta atual
+    const perguntaAtualElement = document.querySelector(`[data-pergunta="${numero}"]`);
+    if (perguntaAtualElement) {
+        perguntaAtualElement.style.display = 'block';
+    }
+    
+    // Atualizar progresso
+    document.getElementById('progresso').textContent = numero;
+    
+    // Atualizar botões
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnProximo = document.getElementById('btnProximo');
+    const btnEnviar = document.getElementById('btnEnviar');
+    
+    btnAnterior.style.display = numero > 1 ? 'block' : 'none';
+    
+    if (numero === totalPerguntas) {
+        btnProximo.style.display = 'none';
+        btnEnviar.style.display = 'block';
+    } else {
+        btnProximo.style.display = 'block';
+        btnEnviar.style.display = 'none';
+    }
+}
+
+function proximaPergunta() {
+    if (perguntaAtual < totalPerguntas) {
+        perguntaAtual++;
+        mostrarPergunta(perguntaAtual);
+    }
+}
+
+function perguntaAnterior() {
+    if (perguntaAtual > 1) {
+        perguntaAtual--;
+        mostrarPergunta(perguntaAtual);
+    }
+}
+
+// Event listeners
+document.getElementById('btnProximo').addEventListener('click', proximaPergunta);
+document.getElementById('btnAnterior').addEventListener('click', perguntaAnterior);
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    mostrarPergunta(1);
+    
+    // Validação do formulário
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        const perguntas = document.querySelectorAll('.pergunta-card');
+        let todasRespondidas = true;
+        
+        perguntas.forEach(pergunta => {
+            const radioButtons = pergunta.querySelectorAll('input[type="radio"]');
+            const respondida = Array.from(radioButtons).some(radio => radio.checked);
+            
+            if (!respondida) {
+                todasRespondidas = false;
+                pergunta.classList.add('border-danger');
+            } else {
+                pergunta.classList.remove('border-danger');
+            }
+        });
+        
+        if (!todasRespondidas) {
+            e.preventDefault();
+            alert('Por favor, responda todas as perguntas antes de enviar o quiz.');
+            
+            // Mostrar primeira pergunta não respondida
+            perguntas.forEach((pergunta, index) => {
+                const radioButtons = pergunta.querySelectorAll('input[type="radio"]');
+                const respondida = Array.from(radioButtons).some(radio => radio.checked);
+                
+                if (!respondida) {
+                    perguntaAtual = index + 1;
+                    mostrarPergunta(perguntaAtual);
+                    return;
+                }
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.quiz-stat {
+    padding: 1rem;
+}
+
+.quiz-stat i {
+    margin-bottom: 0.5rem;
+}
+
+.quiz-progress {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.pergunta-card {
+    transition: all 0.3s ease;
+}
+
+.pergunta-card.border-danger {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.alternativas .form-check {
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.alternativas .form-check:hover {
+    border-color: var(--primary-color);
+    background-color: #f8f9fa;
+}
+
+.alternativas .form-check input[type="radio"]:checked + label {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.alternativas .form-check input[type="radio"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .quiz-stat {
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .quiz-progress {
+        order: -1;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

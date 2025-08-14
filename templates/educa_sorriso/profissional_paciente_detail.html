@@ -1,0 +1,297 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Perfil do Paciente - Profissional{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_dashboard' %}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_consultas' %}">
+                            <i class="bi bi-calendar-check"></i> Consultas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'educa_sorriso:profissional_pacientes' %}">
+                            <i class="bi bi-people"></i> Pacientes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-person text-primary"></i>
+                    Perfil do Paciente
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'educa_sorriso:profissional_pacientes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informações Pessoais -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-circle"></i>
+                                Informações Pessoais
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nome Completo:</strong><br>
+                                        {{ paciente.usuario.get_full_name }}</p>
+                                    <p><strong>Usuário:</strong><br>
+                                        @{{ paciente.usuario.username }}</p>
+                                    <p><strong>Email:</strong><br>
+                                        {{ paciente.usuario.email }}</p>
+                                    <p><strong>Tipo de Usuário:</strong><br>
+                                        <span class="badge bg-{{ paciente.tipo_usuario|yesno:'primary,success' }}">
+                                            {{ paciente.get_tipo_usuario_display }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>CPF:</strong><br>
+                                        {{ paciente.cpf }}</p>
+                                    <p><strong>CadÚnico:</strong><br>
+                                        {{ paciente.cad_unico|default:"Não informado" }}</p>
+                                    <p><strong>Data de Nascimento:</strong><br>
+                                        {{ paciente.data_nascimento|date:"d/m/Y" }}</p>
+                                    <p><strong>Data de Cadastro:</strong><br>
+                                        {{ paciente.data_cadastro|date:"d/m/Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações de Contato -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-telephone"></i>
+                                Informações de Contato
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Telefone:</strong><br>
+                                        {{ paciente.telefone }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>CEP:</strong><br>
+                                        {{ paciente.cep }}</p>
+                                </div>
+                            </div>
+                            <p><strong>Endereço:</strong><br>
+                                {{ paciente.endereco }}, {{ paciente.bairro }}<br>
+                                {{ paciente.cidade }}/{{ paciente.estado }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar com estatísticas -->
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-graph-up"></i>
+                                Estatísticas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-person" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary">{{ total_consultas }}</h4>
+                                        <small class="text-muted">Consultas</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success">{{ total_anamneses }}</h4>
+                                    <small class="text-muted">Anamneses</small>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-warning">{{ consultas_agendadas }}</h4>
+                                        <small class="text-muted">Agendadas</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-info">{{ consultas_realizadas }}</h4>
+                                    <small class="text-muted">Realizadas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ações Rápidas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-lightning"></i>
+                                Ações Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'educa_sorriso:profissional_anamnese_detail' paciente.pk %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-file-text"></i> Ver Anamnese
+                                </a>
+                                <a href="{% url 'educa_sorriso:profissional_consultas' %}?paciente={{ paciente.pk }}" class="btn btn-outline-success">
+                                    <i class="bi bi-calendar-check"></i> Histórico de Consultas
+                                </a>
+                                <a href="{% url 'educa_sorriso:profissional_consultas' %}" class="btn btn-outline-warning">
+                                    <i class="bi bi-plus-circle"></i> Nova Consulta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anamneses -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-text"></i>
+                        Anamneses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if anamneses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Histórico Familiar</th>
+                                    <th>Medicamentos</th>
+                                    <th>Alergias</th>
+                                    <th>Hábitos</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anamnese in anamneses %}
+                                <tr>
+                                    <td>{{ anamnese.data_preenchimento|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if anamnese.historico_familiar %}
+                                            <span class="badge bg-success">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if anamnese.medicamentos %}
+                                            <span class="badge bg-warning">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if anamnese.alergias %}
+                                            <span class="badge bg-danger">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if anamnese.habitos %}
+                                            <span class="badge bg-info">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'educa_sorriso:profissional_anamnese_detail' paciente.pk %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Nenhuma anamnese encontrada.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Histórico de Consultas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Histórico de Consultas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if consultas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Motivo</th>
+                                    <th>Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consulta in consultas %}
+                                <tr>
+                                    <td>{{ consulta.data_hora|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ consulta.get_tipo_display }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ consulta.status|yesno:'success,warning,secondary,danger' }}">
+                                            {{ consulta.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ consulta.motivo|default:"-" }}</td>
+                                    <td>{{ consulta.observacoes|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Nenhuma consulta encontrada.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

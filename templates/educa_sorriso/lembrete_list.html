@@ -1,0 +1,318 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Lembretes - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-bell me-2"></i>Lembretes e Alertas
+        </h1>
+        <div>
+            <button type="button" class="btn btn-outline-primary me-2" onclick="marcarTodosLidos()">
+                <i class="bi bi-check-all me-2"></i>Marcar Todos como Lidos
+            </button>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoLembreteModal">
+                <i class="bi bi-plus-circle me-2"></i>Novo Lembrete
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="filtroTipo" class="form-label">Tipo</label>
+                    <select class="form-select" id="filtroTipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="higiene">Higiene Bucal</option>
+                        <option value="consulta">Consulta Odontológica</option>
+                        <option value="prevencao">Prevenção</option>
+                        <option value="tratamento">Acompanhamento de Tratamento</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filtroStatus" class="form-label">Status</label>
+                    <select class="form-select" id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="nao_lido">Não lidos</option>
+                        <option value="lido">Lidos</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-outline-secondary" onclick="aplicarFiltros()">
+                            <i class="bi bi-funnel me-2"></i>Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for lembrete in page_obj %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100 lembrete-card {% if not lembrete.lido %}border-warning{% endif %}">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-{% if lembrete.tipo == 'higiene' %}droplet{% elif lembrete.tipo == 'consulta' %}calendar-check{% elif lembrete.tipo == 'prevencao' %}shield-check{% else %}heart-pulse{% endif %} me-2"></i>
+                                    {{ lembrete.titulo }}
+                                </h6>
+                                <div>
+                                    {% if not lembrete.lido %}
+                                        <span class="badge bg-warning me-2">Novo</span>
+                                    {% endif %}
+                                    <span class="badge bg-{% if lembrete.tipo == 'higiene' %}primary{% elif lembrete.tipo == 'consulta' %}success{% elif lembrete.tipo == 'prevencao' %}info{% else %}secondary{% endif %}">
+                                        {{ lembrete.get_tipo_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <p class="mb-2">{{ lembrete.descricao|truncatewords:30 }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    <strong>Data do Lembrete:</strong> {{ lembrete.data_lembrete|date:"d/m/Y H:i" }}
+                                </p>
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <strong>Criado em:</strong> {{ lembrete.data_criacao|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if not lembrete.lido %}
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="marcarLido({{ lembrete.pk }})">
+                                            <i class="bi bi-check me-1"></i>Marcar como Lido
+                                        </button>
+                                    {% else %}
+                                        <span class="text-success small">
+                                            <i class="bi bi-check-circle me-1"></i>Lido
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="verDetalhes({{ lembrete.pk }})">
+                                        <i class="bi bi-eye me-1"></i>Ver
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="excluirLembrete({{ lembrete.pk }})">
+                                        <i class="bi bi-trash me-1"></i>Excluir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhum lembrete encontrado</h4>
+            <p class="text-muted">Você não possui lembretes ativos no momento.</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoLembreteModal">
+                <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Lembrete
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal Novo Lembrete -->
+<div class="modal fade" id="novoLembreteModal" tabindex="-1" aria-labelledby="novoLembreteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="novoLembreteModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Novo Lembrete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'educa_sorriso:lembrete_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label">Título *</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo *</label>
+                                <select class="form-select" id="tipo" name="tipo" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="higiene">Higiene Bucal</option>
+                                    <option value="consulta">Consulta Odontológica</option>
+                                    <option value="prevencao">Prevenção</option>
+                                    <option value="tratamento">Acompanhamento de Tratamento</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição *</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="data_lembrete" class="form-label">Data e Hora do Lembrete *</label>
+                        <input type="datetime-local" class="form-control" id="data_lembrete" name="data_lembrete" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Criar Lembrete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function marcarLido(lembreteId) {
+    if (confirm('Deseja marcar este lembrete como lido?')) {
+        fetch(`/lembretes/${lembreteId}/marcar-lido/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao marcar como lido.');
+            }
+        });
+    }
+}
+
+function marcarTodosLidos() {
+    if (confirm('Deseja marcar todos os lembretes como lidos?')) {
+        // Implementar lógica para marcar todos como lidos
+        alert('Funcionalidade será implementada em breve!');
+    }
+}
+
+function verDetalhes(lembreteId) {
+    // Implementar visualização detalhada do lembrete
+    alert('Funcionalidade será implementada em breve!');
+}
+
+function excluirLembrete(lembreteId) {
+    if (confirm('Deseja excluir este lembrete?')) {
+        // Implementar exclusão do lembrete
+        alert('Funcionalidade será implementada em breve!');
+    }
+}
+
+function aplicarFiltros() {
+    const tipo = document.getElementById('filtroTipo').value;
+    const status = document.getElementById('filtroStatus').value;
+    
+    let url = window.location.pathname;
+    const params = new URLSearchParams();
+    
+    if (tipo) params.append('tipo', tipo);
+    if (status) params.append('status', status);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+// Definir data mínima como agora
+document.addEventListener('DOMContentLoaded', function() {
+    const dataLembreteInput = document.getElementById('data_lembrete');
+    if (dataLembreteInput) {
+        const agora = new Date();
+        const dataMinima = agora.toISOString().slice(0, 16);
+        dataLembreteInput.min = dataMinima;
+    }
+});
+</script>
+
+<style>
+.lembrete-card {
+    transition: all 0.3s ease;
+}
+
+.lembrete-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.lembrete-card.border-warning {
+    border-width: 2px !important;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.modal-content {
+    border-radius: 15px;
+}
+
+.modal-header {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.modal-footer {
+    border-top: 2px solid #e9ecef;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Dashboard - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Bem-vindo(a), {{ perfil.usuario.get_full_name|default:perfil.usuario.username }}!</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-geo-alt me-1"></i>{{ perfil.cidade }} - {{ perfil.estado }}
+                    </p>
+                </div>
+                <div class="text-end">
+                    <p class="mb-1">
+                        <i class="bi bi-calendar3 me-1"></i>{{ perfil.data_cadastro|date:"d/m/Y" }}
+                    </p>
+                    <span class="badge bg-primary">{{ perfil.get_tipo_usuario_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-calendar-check" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="stats-number">{{ consultas_proximas.count }}</div>
+                        <p class="mb-0">Consultas Agendadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-bell" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="stats-number">{{ lembretes_nao_lidos.count }}</div>
+                        <p class="mb-0">Lembretes Não Lidos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-chat-dots" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="stats-number">{{ mensagens_nao_respondidas.count }}</div>
+                        <p class="mb-0">Mensagens Pendentes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-clipboard2-pulse" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="stats-number">{{ perfil.anamneses.count }}</div>
+                        <p class="mb-0">Anamneses Realizadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="sidebar">
+                <h5 class="mb-3">
+                    <i class="bi bi-list me-2"></i>Menu Rápido
+                </h5>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{% url 'educa_sorriso:consulta_create' %}">
+                        <i class="bi bi-calendar-plus me-2"></i>Agendar Consulta
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:anamnese_create' %}">
+                        <i class="bi bi-clipboard2-pulse me-2"></i>Nova Anamnese
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:suporte_create' %}">
+                        <i class="bi bi-chat-dots me-2"></i>Enviar Mensagem
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:quiz_list' %}">
+                        <i class="bi bi-puzzle me-2"></i>Fazer Quiz
+                    </a>
+                    <a class="nav-link" href="{% url 'educa_sorriso:conteudo_list' %}">
+                        <i class="bi bi-book me-2"></i>Conteúdo Educativo
+                    </a>
+                </nav>
+                
+                <hr>
+                
+                <h6 class="mb-2">
+                    <i class="bi bi-mic me-2"></i>Comandos de Voz
+                </h6>
+                <div class="d-grid">
+                    <button class="btn btn-outline-primary btn-sm" onclick="ativarVoz()">
+                        <i class="bi bi-mic-fill me-1"></i>Ativar Voz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Próximas Consultas -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>Próximas Consultas
+                    </h5>
+                    <a href="{% url 'educa_sorriso:consulta_list' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if consultas_proximas %}
+                        {% for consulta in consultas_proximas %}
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ consulta.tipo_consulta }}</h6>
+                                    <p class="text-muted mb-0">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {{ consulta.data_hora|date:"d/m/Y H:i" }}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{% if consulta.status == 'agendada' %}warning{% elif consulta.status == 'confirmada' %}success{% else %}secondary{% endif %}">
+                                        {{ consulta.get_status_display }}
+                                    </span>
+                                    <div class="mt-1">
+                                        <a href="{% url 'educa_sorriso:consulta_update' consulta.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-calendar-x me-2"></i>Nenhuma consulta agendada
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Lembretes Não Lidos -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bell me-2"></i>Lembretes Não Lidos
+                    </h5>
+                    <a href="{% url 'educa_sorriso:lembrete_list' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if lembretes_nao_lidos %}
+                        {% for lembrete in lembretes_nao_lidos %}
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ lembrete.titulo }}</h6>
+                                    <p class="text-muted mb-0">{{ lembrete.descricao|truncatewords:10 }}</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ lembrete.data_lembrete|date:"d/m/Y H:i" }}
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-{% if lembrete.tipo == 'higiene' %}info{% elif lembrete.tipo == 'consulta' %}warning{% elif lembrete.tipo == 'prevencao' %}success{% else %}primary{% endif %}">
+                                        {{ lembrete.get_tipo_display }}
+                                    </span>
+                                    <div class="mt-1">
+                                        <button class="btn btn-sm btn-outline-success" onclick="marcarLido({{ lembrete.pk }})">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-bell-slash me-2"></i>Nenhum lembrete não lido
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mensagens de Suporte -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Mensagens de Suporte
+                    </h5>
+                    <a href="{% url 'educa_sorriso:suporte_list' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if mensagens_nao_respondidas %}
+                        {% for mensagem in mensagens_nao_respondidas %}
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ mensagem.assunto }}</h6>
+                                    <p class="text-muted mb-0">{{ mensagem.mensagem|truncatewords:15 }}</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ mensagem.data_envio|date:"d/m/Y H:i" }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{% if mensagem.status == 'aberta' %}warning{% elif mensagem.status == 'em_andamento' %}info{% else %}secondary{% endif %}">
+                                        {{ mensagem.get_status_display }}
+                                    </span>
+                                    <div class="mt-1">
+                                        <a href="{% url 'educa_sorriso:suporte_detail' mensagem.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-chat-slash me-2"></i>Nenhuma mensagem pendente
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function marcarLido(lembreteId) {
+    fetch(`/lembretes/${lembreteId}/marcar-lido/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function ativarVoz() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        
+        recognition.onstart = function() {
+            alert('Fale agora!');
+        };
+        
+        recognition.onresult = function(event) {
+            const comando = event.results[0][0].transcript.toLowerCase();
+            
+            fetch('/api/voz/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ comando: comando })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensagem);
+                
+                // Executar ação baseada no comando
+                if (data.acao === 'agendar_consulta') {
+                    window.location.href = '{% url "educa_sorriso:consulta_create" %}';
+                } else if (data.acao === 'lembretes') {
+                    window.location.href = '{% url "educa_sorriso:lembrete_list" %}';
+                } else if (data.acao === 'quiz') {
+                    window.location.href = '{% url "educa_sorriso:quiz_list" %}';
+                }
+            });
+        };
+        
+        recognition.onerror = function(event) {
+            alert('Erro no reconhecimento de voz: ' + event.error);
+        };
+        
+        recognition.start();
+    } else {
+        alert('Seu navegador não suporta reconhecimento de voz.');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Detalhes da Anamnese - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'educa_sorriso:anamnese_list' %}">
+                            <i class="bi bi-clipboard2-pulse me-1"></i>Minhas Anamneses
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
+                </ol>
+            </nav>
+
+            <!-- Cabeçalho -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">Anamnese de {{ anamnese.paciente.usuario.get_full_name|default:anamnese.paciente.usuario.username }}</h3>
+                            <p class="mb-0">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                Preenchida em: {{ anamnese.data_preenchimento|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark fs-6">
+                                {{ anamnese.paciente.get_tipo_usuario_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados Gerais -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-heart-pulse me-2"></i>Dados Gerais de Saúde
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-primary">Possui Alergias:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.possui_alergias %}
+                                        <span class="badge bg-warning">Sim</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Não</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            {% if anamnese.alergias_descricao %}
+                                <div class="mb-3">
+                                    <label class="fw-bold text-primary">Descrição das Alergias:</label>
+                                    <p class="mb-2">{{ anamnese.alergias_descricao }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-primary">Última Consulta Odontológica:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.ultima_consulta %}
+                                        {{ anamnese.ultima_consulta|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if anamnese.medicamentos_uso %}
+                        <div class="mb-3">
+                            <label class="fw-bold text-primary">Medicamentos em Uso:</label>
+                            <p class="mb-2">{{ anamnese.medicamentos_uso }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if anamnese.problemas_saude %}
+                        <div class="mb-3">
+                            <label class="fw-bold text-primary">Problemas de Saúde:</label>
+                            <p class="mb-2">{{ anamnese.problemas_saude }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dados Odontológicos -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-tooth me-2"></i>Dados Odontológicos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-secondary">Frequência de Escovação:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.frequencia_escovacao %}
+                                        {{ anamnese.get_frequencia_escovacao_display }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold text-secondary">Usa Fio Dental:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.usa_fio_dental %}
+                                        <span class="badge bg-success">Sim</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Não</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-secondary">Frequência do Uso do Fio Dental:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.frequencia_fio_dental %}
+                                        {{ anamnese.get_frequencia_fio_dental_display }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if anamnese.problemas_bucais %}
+                        <div class="mb-3">
+                            <label class="fw-bold text-secondary">Problemas Bucais:</label>
+                            <p class="mb-2">{{ anamnese.problemas_bucais }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-secondary">Sente Dor nos Dentes:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.dor_dentes %}
+                                        <span class="badge bg-danger">Sim</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Não</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="fw-bold text-secondary">Sangramento na Gengiva:</label>
+                                <p class="mb-2">
+                                    {% if anamnese.sangramento_gengiva %}
+                                        <span class="badge bg-danger">Sim</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Não</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico Familiar -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Histórico Familiar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if anamnese.problemas_odontologicos_familia %}
+                        <div class="mb-3">
+                            <label class="fw-bold text-info">Problemas Odontológicos na Família:</label>
+                            <p class="mb-2">{{ anamnese.problemas_odontologicos_familia }}</p>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Nenhum problema odontológico familiar registrado.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{% url 'educa_sorriso:anamnese_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar à Lista
+                </a>
+                
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="imprimir()">
+                        <i class="bi bi-printer me-2"></i>Imprimir
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="exportarPDF()">
+                        <i class="bi bi-file-pdf me-2"></i>Exportar PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function imprimir() {
+    window.print();
+}
+
+function exportarPDF() {
+    // Simulação de exportação para PDF
+    alert('Funcionalidade de exportação para PDF será implementada em breve!');
+}
+</script>
+
+<style>
+@media print {
+    .breadcrumb, .btn, .btn-group {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+    }
+    
+    .bg-warning {
+        background-color: #fff3cd !important;
+    }
+    
+    .bg-success {
+        background-color: #d1e7dd !important;
+    }
+    
+    .bg-danger {
+        background-color: #f8d7da !important;
+    }
+}
+
+.fw-bold {
+    font-weight: 600 !important;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

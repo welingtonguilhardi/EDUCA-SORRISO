@@ -1,0 +1,114 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Suporte - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-chat-dots me-2"></i>Suporte Interativo
+        </h1>
+        <a href="{% url 'educa_sorriso:suporte_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Nova Mensagem
+        </a>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for mensagem in page_obj %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ mensagem.assunto }}</h6>
+                                <span class="badge bg-{% if mensagem.status == 'aberta' %}warning{% elif mensagem.status == 'em_andamento' %}info{% elif mensagem.status == 'respondida' %}success{% else %}secondary{% endif %}">
+                                    {{ mensagem.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    <strong>Enviada em:</strong> {{ mensagem.data_envio|date:"d/m/Y H:i" }}
+                                </p>
+                                {% if mensagem.estudante %}
+                                    <p class="text-muted mb-1">
+                                        <i class="bi bi-person-check me-2"></i>
+                                        <strong>Atendida por:</strong> {{ mensagem.estudante.usuario.get_full_name }}
+                                    </p>
+                                {% endif %}
+                                {% if mensagem.data_resposta %}
+                                    <p class="text-muted mb-1">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <strong>Respondida em:</strong> {{ mensagem.data_resposta|date:"d/m/Y H:i" }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6 class="text-primary">Mensagem:</h6>
+                                <p class="mb-0">{{ mensagem.mensagem|truncatewords:20 }}</p>
+                            </div>
+                            
+                            {% if mensagem.resposta %}
+                                <div class="mb-3">
+                                    <h6 class="text-success">Resposta:</h6>
+                                    <p class="mb-0">{{ mensagem.resposta|truncatewords:20 }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="text-center">
+                                <a href="{% url 'educa_sorriso:suporte_detail' mensagem.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-chat-dots text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhuma mensagem encontrada</h4>
+            <p class="text-muted">Você ainda não possui mensagens de suporte.</p>
+            <a href="{% url 'educa_sorriso:suporte_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Enviar Primeira Mensagem
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

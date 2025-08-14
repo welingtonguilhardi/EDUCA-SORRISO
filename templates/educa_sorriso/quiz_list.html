@@ -1,0 +1,102 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Quiz Educativo - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary mb-3">
+            <i class="bi bi-puzzle me-3"></i>Quiz do Sorriso
+        </h1>
+        <p class="lead text-muted">
+            Aprenda sobre saúde bucal de forma divertida e interativa!
+        </p>
+    </div>
+
+    {% if quizzes %}
+        <div class="row">
+            {% for quiz in quizzes %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 quiz-card">
+                        <div class="card-body text-center">
+                            <div class="quiz-icon mb-3">
+                                <i class="bi bi-puzzle-fill text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            
+                            <h5 class="card-title">{{ quiz.titulo }}</h5>
+                            <p class="card-text text-muted">{{ quiz.descricao|truncatewords:15 }}</p>
+                            
+                            <div class="quiz-stats mb-3">
+                                <span class="badge bg-info me-2">
+                                    <i class="bi bi-question-circle me-1"></i>
+                                    {{ quiz.perguntas.count }} perguntas
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    {{ quiz.data_criacao|date:"d/m/Y" }}
+                                </span>
+                            </div>
+                            
+                            <a href="{% url 'educa_sorriso:quiz_detail' quiz.pk %}" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-play-circle me-2"></i>Começar Quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-puzzle text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhum quiz disponível</h4>
+            <p class="text-muted">Em breve teremos quizzes educativos sobre saúde bucal!</p>
+        </div>
+    {% endif %}
+    
+    <!-- Seção de Resultados -->
+    <div class="mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-trophy me-2"></i>Meus Resultados
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="{% url 'educa_sorriso:quiz_resultados' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-bar-chart me-2"></i>Ver Histórico de Resultados
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quiz-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.quiz-icon {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.quiz-stats .badge {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

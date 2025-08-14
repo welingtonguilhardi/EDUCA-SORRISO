@@ -1,0 +1,279 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Resultados dos Quizzes - EDUCA SORRISO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary mb-3">
+            <i class="bi bi-trophy me-3"></i>Meus Resultados
+        </h1>
+        <p class="lead text-muted">
+            Acompanhe seu progresso nos quizzes educativos sobre saúde bucal
+        </p>
+    </div>
+
+    {% if resultados %}
+        <!-- Estatísticas Gerais -->
+        <div class="row mb-5">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-puzzle text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-primary">{{ total_quizzes }}</h3>
+                        <p class="text-muted mb-0">Quizzes Realizados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-success">{{ total_perguntas }}</h3>
+                        <p class="text-muted mb-0">Perguntas Respondidas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-star text-warning" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-warning">{{ media_geral }}%</h3>
+                        <p class="text-muted mb-0">Média Geral</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-award text-info" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-info">{{ melhor_resultado }}%</h3>
+                        <p class="text-muted mb-0">Melhor Resultado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Resultados -->
+        <div class="row">
+            {% for resultado in page_obj %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100 resultado-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ resultado.quiz.titulo }}</h6>
+                                <span class="badge bg-{% if resultado.percentual >= 80 %}success{% elif resultado.percentual >= 60 %}warning{% else %}danger{% endif %}">
+                                    {{ resultado.percentual }}%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="progress mb-2" style="height: 10px;">
+                                    <div class="progress-bar bg-{% if resultado.percentual >= 80 %}success{% elif resultado.percentual >= 60 %}warning{% else %}danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ resultado.percentual }}%"
+                                         aria-valuenow="{{ resultado.percentual }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    {{ resultado.pontuacao }} de {{ resultado.total_perguntas }} perguntas corretas
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    <strong>Realizado em:</strong> {{ resultado.data_realizacao|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                            
+                            <!-- Feedback baseado no resultado -->
+                            <div class="alert alert-{% if resultado.percentual >= 80 %}success{% elif resultado.percentual >= 60 %}warning{% else %}danger{% endif %} mb-3">
+                                <h6 class="alert-heading">
+                                    {% if resultado.percentual >= 80 %}
+                                        <i class="bi bi-emoji-smile me-2"></i>Excelente!
+                                    {% elif resultado.percentual >= 60 %}
+                                        <i class="bi bi-emoji-neutral me-2"></i>Bom trabalho!
+                                    {% else %}
+                                        <i class="bi bi-emoji-frown me-2"></i>Continue estudando!
+                                    {% endif %}
+                                </h6>
+                                <p class="mb-0">
+                                    {% if resultado.percentual >= 80 %}
+                                        Parabéns! Você demonstrou excelente conhecimento sobre saúde bucal.
+                                    {% elif resultado.percentual >= 60 %}
+                                        Bom trabalho! Você tem uma boa base de conhecimento.
+                                    {% else %}
+                                        Não desanime! Continue estudando e pratique mais.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            <div class="text-center">
+                                <a href="{% url 'educa_sorriso:quiz_detail' resultado.quiz.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Refazer Quiz
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+        
+        <!-- Gráfico de Progresso -->
+        <div class="mt-5">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Progresso ao Longo do Tempo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressoChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-trophy text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Nenhum resultado encontrado</h4>
+            <p class="text-muted">Você ainda não realizou nenhum quiz educativo.</p>
+            <a href="{% url 'educa_sorriso:quiz_list' %}" class="btn btn-primary">
+                <i class="bi bi-play-circle me-2"></i>Começar a Estudar
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de progresso
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('progressoChart');
+    if (ctx && {{ resultados|length }} > 0) {
+        const dados = [
+            {% for resultado in resultados %}
+                {
+                    quiz: '{{ resultado.quiz.titulo|escapejs }}',
+                    percentual: {{ resultado.percentual }},
+                    data: '{{ resultado.data_realizacao|date:"d/m" }}'
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dados.map(d => d.data),
+                datasets: [{
+                    label: 'Percentual de Acerto (%)',
+                    data: dados.map(d => d.percentual),
+                    borderColor: '#2E86AB',
+                    backgroundColor: 'rgba(46, 134, 171, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Acerto: ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.resultado-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.resultado-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border-bottom: none;
+}
+</style>
+{% endblock %}

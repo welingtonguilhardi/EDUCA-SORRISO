@@ -1,0 +1,231 @@
+{% extends 'educa_sorriso/base.html' %}
+
+{% block title %}Pacientes - Profissional{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_dashboard' %}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'educa_sorriso:profissional_consultas' %}">
+                            <i class="bi bi-calendar-check"></i> Consultas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'educa_sorriso:profissional_pacientes' %}">
+                            <i class="bi bi-people"></i> Pacientes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-people text-primary"></i>
+                    Pacientes
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <span class="badge bg-primary">{{ page_obj.paginator.count }} pacientes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros e Busca -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="q" value="{{ busca }}" 
+                                       placeholder="Buscar por nome, CPF ou usuário...">
+                                <button class="btn btn-primary" type="submit">Buscar</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="tipo" class="form-select">
+                                <option value="">Todos os tipos</option>
+                                <option value="paciente" {% if request.GET.tipo == 'paciente' %}selected{% endif %}>Paciente</option>
+                                <option value="responsavel" {% if request.GET.tipo == 'responsavel' %}selected{% endif %}>Responsável</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de Pacientes -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Lista de Pacientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>CPF</th>
+                                    <th>Telefone</th>
+                                    <th>Data Nascimento</th>
+                                    <th>Cidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paciente in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                            <div>
+                                                <strong>{{ paciente.usuario.get_full_name }}</strong><br>
+                                                <small class="text-muted">@{{ paciente.usuario.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ paciente.tipo_usuario|yesno:'primary,success' }}">
+                                            {{ paciente.get_tipo_usuario_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ paciente.cpf }}</td>
+                                    <td>{{ paciente.telefone }}</td>
+                                    <td>{{ paciente.data_nascimento|date:"d/m/Y" }}</td>
+                                    <td>{{ paciente.cidade }}/{{ paciente.estado }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'educa_sorriso:profissional_paciente_detail' paciente.pk %}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                            <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle dropdown-toggle-split" 
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                <span class="visually-hidden">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'educa_sorriso:profissional_paciente_detail' paciente.pk %}">
+                                                        <i class="bi bi-person"></i> Perfil Completo
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'educa_sorriso:profissional_anamnese_detail' paciente.pk %}">
+                                                        <i class="bi bi-file-text"></i> Anamnese
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'educa_sorriso:profissional_consultas' %}?paciente={{ paciente.pk }}">
+                                                        <i class="bi bi-calendar-check"></i> Consultas
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if busca %}&q={{ busca }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busca %}&q={{ busca }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if busca %}&q={{ busca }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busca %}&q={{ busca }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busca %}&q={{ busca }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people display-1 text-muted"></i>
+                        <h4 class="mt-3">Nenhum paciente encontrado</h4>
+                        <p class="text-muted">
+                            {% if busca %}
+                                Não foram encontrados pacientes para "{{ busca }}".
+                                <a href="{% url 'educa_sorriso:profissional_pacientes' %}">Limpar busca</a>
+                            {% else %}
+                                Ainda não há pacientes cadastrados no sistema.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit do formulário quando o tipo de usuário muda
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoSelect = document.querySelector('select[name="tipo"]');
+        if (tipoSelect) {
+            tipoSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}
