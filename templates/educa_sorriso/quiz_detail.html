@@ -54,7 +54,7 @@
             </div>
 
             <!-- Formulário do Quiz -->
-            <form method="post" id="quizForm">
+            <form id="quizForm">
                 {% csrf_token %}
                 <div id="perguntas-container">
                     {% for pergunta in quiz.perguntas.all %}
@@ -98,11 +98,47 @@
                         Próxima<i class="bi bi-arrow-right ms-2"></i>
                     </button>
                     
-                    <button type="submit" class="btn btn-success" id="btnEnviar" style="display: none;">
+                    <button type="button" class="btn btn-success" id="btnEnviar" style="display: none;">
                         <i class="bi bi-check-circle me-2"></i>Enviar Quiz
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Resultados -->
+<div class="modal fade" id="resultadoModal" tabindex="-1" aria-labelledby="resultadoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="resultadoModalLabel">Resultado do Quiz</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="bi bi-trophy text-warning" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="mb-3">Parabéns! Você completou o quiz.</h4>
+                
+                <div class="d-flex justify-content-center mb-4">
+                    <div class="resultado-circle">
+                        <span id="percentualResultado">0%</span>
+                    </div>
+                </div>
+                
+                <p class="mb-1">Você acertou <strong id="pontuacaoResultado">0</strong> de <strong id="totalPerguntasResultado">0</strong> perguntas.</p>
+                <p class="text-muted">Continue praticando para melhorar ainda mais!</p>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-list me-2"></i>Ver Todos os Quizzes
+                    </button>
+                    <a href="{% url 'educa_sorriso:quiz_resultados' %}" class="btn btn-primary">
+                        <i class="bi bi-trophy me-2"></i>Ver Meus Resultados
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -164,39 +200,50 @@ document.getElementById('btnAnterior').addEventListener('click', perguntaAnterio
 document.addEventListener('DOMContentLoaded', function() {
     mostrarPergunta(1);
     
-    // Validação do formulário
-    document.getElementById('quizForm').addEventListener('submit', function(e) {
-        const perguntas = document.querySelectorAll('.pergunta-card');
-        let todasRespondidas = true;
-        
-        perguntas.forEach(pergunta => {
-            const radioButtons = pergunta.querySelectorAll('input[type="radio"]');
-            const respondida = Array.from(radioButtons).some(radio => radio.checked);
-            
-            if (!respondida) {
-                todasRespondidas = false;
-                pergunta.classList.add('border-danger');
-            } else {
-                pergunta.classList.remove('border-danger');
-            }
+    // Submissão do formulário via AJAX
+    document.getElementById('btnEnviar').addEventListener('click', function() {
+        // Coletar respostas
+        const respostas = {};
+        const radios = document.querySelectorAll('input[type="radio"]:checked');
+        radios.forEach(radio => {
+            const perguntaId = radio.name.split('_')[1];
+            respostas[perguntaId] = radio.value;
         });
         
-        if (!todasRespondidas) {
-            e.preventDefault();
+        // Verificar se todas as perguntas foram respondidas
+        if (Object.keys(respostas).length !== totalPerguntas) {
             alert('Por favor, responda todas as perguntas antes de enviar o quiz.');
-            
-            // Mostrar primeira pergunta não respondida
-            perguntas.forEach((pergunta, index) => {
-                const radioButtons = pergunta.querySelectorAll('input[type="radio"]');
-                const respondida = Array.from(radioButtons).some(radio => radio.checked);
-                
-                if (!respondida) {
-                    perguntaAtual = index + 1;
-                    mostrarPergunta(perguntaAtual);
-                    return;
-                }
-            });
+            return;
         }
+        
+        // Enviar via AJAX
+        fetch("{% url 'educa_sorriso:quiz_submit' quiz.pk %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ respostas: respostas })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Atualizar modal com os resultados
+                document.getElementById('percentualResultado').textContent = data.percentual + '%';
+                document.getElementById('pontuacaoResultado').textContent = data.pontuacao;
+                document.getElementById('totalPerguntasResultado').textContent = data.total_perguntas;
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('resultadoModal'));
+                modal.show();
+            } else {
+                alert('Ocorreu um erro ao enviar o quiz. Tente novamente.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao enviar o quiz. Tente novamente.');
+        });
     });
 });
 </script>
@@ -246,6 +293,20 @@ document.addEventListener('DOMContentLoaded', function() {
 .alternativas .form-check input[type="radio"]:checked {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+}
+
+.resultado-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2E86AB 0%, #28A745 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
